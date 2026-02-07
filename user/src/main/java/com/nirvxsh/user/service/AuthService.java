@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -58,7 +59,12 @@ public class AuthService {
         //     throw new RuntimeException("Invalid password");
         // }
 
-        String accessToken = jwtUtil.generateToken(user);
+        List<String> permissions =
+        userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        String accessToken = jwtUtil.generateToken(user, permissions);
         RefreshToken refreshToken = refreshTokenService.create(user);
 
         return new AuthResponse(
@@ -92,18 +98,18 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    @Transactional
-    public AuthResponse refresh(String refreshToken) {
+    // @Transactional
+    // public AuthResponse refresh(String refreshToken) {
 
-        RefreshToken token = refreshTokenService.verify(refreshToken);
-        User user = userRepository.findById(token.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+    //     RefreshToken token = refreshTokenService.verify(refreshToken);
+    //     User user = userRepository.findById(token.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
 
-        String newAccessToken = jwtUtil.generateToken(user);
-        RefreshToken newRefreshToken = refreshTokenService.create(user);
+    //     String newAccessToken = jwtUtil.generateToken(user ,permissions);
+    //     RefreshToken newRefreshToken = refreshTokenService.create(user);
 
-        return new AuthResponse(
-                newAccessToken,
-                newRefreshToken.getToken());
-    }
+    //     return new AuthResponse(
+    //             newAccessToken,
+    //             newRefreshToken.getToken());
+    // }
 
 }

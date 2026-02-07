@@ -34,7 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository
                 .findByUsernameOrEmail(username, username)
                 .orElseThrow();
-       // ทำ Logic ดึง Permissions ที่นี่
+                
         List<String> allPermissionCodes = roleRepository.findByRoleNameList(user.getRoles())
                 .stream()
                 .flatMap(role -> role.getPermissionCode().stream())

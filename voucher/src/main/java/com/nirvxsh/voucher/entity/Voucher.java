@@ -1,84 +1,59 @@
 package com.nirvxsh.voucher.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-import com.nirvxsh.voucher.utils.AppUtils.VoucherStatus;
+import com.nirvxsh.voucher.utils.AppUtils.VoucherType;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Version;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
+
+
 
 @Entity
-@Table(
-    name = "vouchers",
-    uniqueConstraints = @UniqueConstraint(columnNames = "code")
-)
-@Getter
-@NoArgsConstructor
+@Table(name = "vouchers")
+@Data
 public class Voucher {
 
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    private Long id;
+    @GeneratedValue
+    private UUID voucherId;
 
-    @Column(nullable = false, updatable = false)
-    private String code;
+    @Column(unique = true, nullable = false)
+    private String voucherCode;
+
+    private String voucherName;
+    private String description;
+
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
+
+    private Integer totalQuota;        // ทั้งระบบ (optional)
+
+    private Integer usedCount = 0;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private VoucherStatus status;
+    private VoucherType type; // DISCOUNT, FREE_SHIPPING, CASHBACK
 
-    @Column(name = "assigned_user_id")
-    private String assignedUserId;
+    @Embedded
+    private VoucherRule rule;
 
-    @Column(nullable = false)
-    private LocalDateTime expiredDate;
+    private String status;
 
-    @Column(nullable = false)
-    private LocalDateTime createDate;
-
-    @Column(nullable = false)
+    @Column(name = "created_by", nullable = false)
     private String createdBy;
 
-    @Column(nullable = false)
-    private LocalDateTime updateDate;
-
-    @Column(nullable = false)
+    @Column(name = "updated_by")
     private String updatedBy;
 
-    @Version
-    private Long version;
+    private LocalDateTime createdDate;
 
-
-    public boolean isExpired() {
-        return expiredDate.isBefore(LocalDateTime.now());
-    }
-
-    public void assignTo(String userId) {
-        this.assignedUserId = userId;
-    }
-
-    public void redeem() {
-        this.status = VoucherStatus.REDEEMED;
-    }
-
-    public static Voucher create(
-            String code,
-            LocalDateTime expiredAt
-    ) {
-        Voucher voucher = new Voucher();
-        voucher.code = code;
-        voucher.status = VoucherStatus.ACTIVE;
-        voucher.expiredDate = expiredAt;
-        return voucher;
-    }
+    private LocalDateTime updatedDate;
 }

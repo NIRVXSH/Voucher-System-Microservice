@@ -30,8 +30,8 @@ public class AuthController {
         authService.register(req);
     }
 
-    @PostMapping("/refresh")
-    public AuthResponse refresh(@RequestParam String refreshToken) {
-        return authService.refresh(refreshToken);
-    }
+    // @PostMapping("/refresh")
+    // public AuthResponse refresh(@RequestParam String refreshToken) {
+    //     return authService.refresh(refreshToken);
+    // }
 }

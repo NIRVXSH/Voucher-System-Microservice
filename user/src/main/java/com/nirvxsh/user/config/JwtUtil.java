@@ -1,7 +1,9 @@
 package com.nirvxsh.user.config;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,24 +16,35 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.access-expiration}")
     private int expiration;
 
-    private Key getSignKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+
+    @PostConstruct
+    public void debugJwt() {
+        System.out.println("SECRET=[" + secret + "]");
+        System.out.println("LENGTH=" + secret.length());
     }
 
-    public String generateToken(User user) {
+    private Key getSignKey() {
+         return Keys.hmacShaKeyFor(
+            secret.trim().getBytes(StandardCharsets.UTF_8)
+    );
+    }
+
+    public String generateToken(User user, List<String> permissions) {
         return Jwts.builder()
                 .setSubject(user.getId().toString())
                 .claim("username", user.getUsername())
                 .claim("email", user.getEmail())
+                .claim("permissions", permissions)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
